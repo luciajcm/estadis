@@ -14,14 +14,6 @@ format:
     embed-resources: true
 ---
 
-## Antecedentes
-
-**Relevancia:**La conectividad a internet es esencial para el desempeño académico, ya que permite el acceso eficiente a plataformas educativas. Evaluar la red en UTEC durante el ciclo 2025-I ayuda a identificar zonas críticas, optimizar recursos y mejorar la experiencia educativa.
-
-**Contexto:**En el contexto académico actual, donde la conectividad influye directamente en el rendimiento estudiantil, resulta clave analizar cómo factores como la velocidad y latencia afectan el acceso a contenidos. Esta evaluación permite comprender los retos tecnológicos que enfrentan las instituciones educativas en un entorno cada vez más digital.
-
-**Justificación:**Este estudio permite vincular el análisis técnico de la red con el impacto en el desempeño académico, identificando oportunidades de mejora en infraestructura y toma de decisiones. A través de un enfoque integral, se busca contribuir al desarrollo institucional mediante estrategias basadas en datos reales y situaciones concretas.
-
 ## Objetivos
 
 Identificar los factores que influyen en la conexión a internet en diferentes ambientes de la UTEC en el periodo académico 2025-I
@@ -30,12 +22,6 @@ Identificar los factores que influyen en la conexión a internet en diferentes a
 
 1.  Analizar la relación entre el piso en el que se ubica el ambiente y los indicadores de conectividad (velocidad de subida, velocidad de bajada y latencia) de la red de UTEC, durante el periodo 2025-1.
 2.  Analizar la relación entre la temperatura y el dispositivo con la velocidad de subida, velocidad de bajada y latencia de la red de UTEC, durante el periodo 2025-1.
-
-## Datos y Limpieza de Datos
-
--   Para evaluar la calidad del internet en UTEC durante el ciclo 2025-I, se empleará un muestreo no probabilístico intencional. El equipo medirá la velocidad de subida, bajada y latencia con nPerf, en distintos horarios y ambientes del campus (aulas, laboratorios, biblioteca, etc.).
--   Limpieza de datos con sum(is.na()) y na.omit().
--   Variables renombradas para mayor comprensión.
 
 ## Variables {.small}
 
@@ -182,6 +168,18 @@ cat("La correlación entre las variables es: ", cor_val)
 
 -    **P(D) = 13.51%** – Sugiere que una cantidad similar de registros corresponde a dispositivos móviles en el segundo piso, lo cual puede ser relevante al analizar comportamiento del usuario y calidad de conexión en esa área específica.
 
+## Datos y Limpieza de Datos
+
+-   Para evaluar la calidad del internet en UTEC durante el ciclo 2025-I, se empleará un muestreo no probabilístico intencional. El equipo medirá la velocidad de subida, bajada y latencia con nPerf, en distintos horarios y ambientes del campus (aulas, laboratorios, biblioteca, etc.).
+-   Limpieza de datos con sum(is.na()) y na.omit().
+-   Variables renombradas para mayor comprensión.
+
+#### Descriptores:
+(Univariadas y bivariadas)
+
+## Probabilidad Empíricas: {.small}
+
+
 ## Probabilidad Condicional: {.small}
 
 -   Evento 1 (A): Seleccionar una persona al azar que se encuentre en el piso 2.
@@ -232,7 +230,7 @@ ggplot(DF3, aes(x = factor(A, levels=c(FALSE,TRUE)),
 ::: {.column width="55%"}
 :::
 ::::
-
+## Modelos de Variable Discretas y Continuas
 ## Variables Aleatorias Discretas {.small}
 
 ***Distribución Binomial***
@@ -306,4 +304,4 @@ denscomp(list(fit.norm, fit.exp, fit.lnorm), legendtext = plot.legend)
 :::::::
 ::::::::::::
 
-## Cierre
+## Conclusiones
