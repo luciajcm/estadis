@@ -50,7 +50,55 @@ names(DF1)[names(DF1) == "Velocidad de subida (Mbps)"] <- "VSubida" #VSubida es 
 names(DF1)[names(DF1) == "Velocidad de bajada (Mbps)"] <- "VBajada" #VBajada es la abreviación de Velocidad de bajada. (media).
 names(DF1)[names(DF1) == "Torre (Torre principal o Torre de 6 pisos)"] <- "Torre"
 names(DF1)[names(DF1) == "Material circundante Predominante"] <- "Material Predominante"
-DF3 <- na.omit(DF1)
+
+
+
+#Limpieza
+DF2<-DF1 #Creamos una copia para no modificar a nuestra tabla inicial
+DF2$Aforo[!(DF2$Aforo > 0 & DF2$Aforo == floor(DF2$Aforo))] <- NA
+sum(is.na(DF2$Aforo))
+
+DF2$Temperatura[!(DF2$Temperatura >= 10 & DF2$Temperatura <= 32)] <- NA
+Q1_temp <- quantile(DF2$Temperatura, 0.25, na.rm = TRUE)
+Q3_temp <- quantile(DF2$Temperatura, 0.75, na.rm = TRUE)
+IQR_temp <- Q3_temp - Q1_temp
+lim_inf_temp <- Q1_temp - 1.5 * IQR_temp
+lim_sup_temp <- Q3_temp + 1.5 * IQR_temp
+DF2$Temperatura[DF2$Temperatura < lim_inf_temp | DF2$Temperatura > lim_sup_temp] <- NA
+
+DF2$Latencia[DF2$Latencia <= 0] <- NA
+Q1_lat <- quantile(DF2$Latencia, 0.25, na.rm = TRUE)
+Q3_lat <- quantile(DF2$Latencia, 0.75, na.rm = TRUE)
+IQR_lat <- Q3_lat - Q1_lat
+lim_inf_lat <- Q1_lat - 1.5 * IQR_lat
+lim_sup_lat <- Q3_lat + 1.5 * IQR_lat
+DF2$Latencia[DF2$Latencia < lim_inf_lat | DF2$Latencia > lim_sup_lat] <- NA
+
+
+DF2$VSubida[!(DF2$VSubida > 0 & DF2$VSubida < 500)] <- NA
+Q1_vsub <- quantile(DF2$VSubida, 0.25, na.rm = TRUE)
+Q3_vsub <- quantile(DF2$VSubida, 0.75, na.rm = TRUE)
+IQR_vsub <- Q3_vsub - Q1_vsub
+lim_inf_vsub <- Q1_vsub - 1.5 * IQR_vsub
+lim_sup_vsub <- Q3_vsub + 1.5 * IQR_vsub
+DF2$VSubida[DF2$VSubida < lim_inf_vsub | DF2$VSubida > lim_sup_vsub] <- NA
+
+DF2$VBajada[!(DF2$VBajada > 0 & DF2$VBajada < 500)] <- NA
+Q1_vbaj <- quantile(DF2$VBajada, 0.25, na.rm = TRUE)
+Q3_vbaj <- quantile(DF2$VBajada, 0.75, na.rm = TRUE)
+IQR_vbaj <- Q3_vbaj - Q1_vbaj
+lim_inf_vbaj <- Q1_vbaj - 1.5 * IQR_vbaj
+lim_sup_vbaj <- Q3_vbaj + 1.5 * IQR_vbaj
+DF2$VBajada[DF2$VBajada < lim_inf_vbaj | DF2$VBajada > lim_sup_vbaj] <- NA
+
+DF2[["Tipo de Conexión"]][DF2[["Tipo de Conexión"]] == "Alámbrica" &
+                           !(DF2$Dispositivo %in% c("Laptop", "Computador"))] <- NA
+
+
+DF2[["Torre"]][DF2[["Torre"]] == "Torre Secundaria" &
+                           !(DF2$Piso %in% c(-2, -1, 1, 2, 3))] <- NA
+
+DF3 <- na.omit(DF2)
 DF3$Día <- factor(DF3$Día,levels = c("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"), ordered = TRUE)
 
 DF3$Turno <- factor(DF3$Turno,levels = c("Mañana Temprano (6:00 a.m. a 9:00 a.m.)", "Mañana Pico (9:00 a.m. a 12:00 p.m)", "Tarde temprano (12:00 p.m. a 3:00 p.m)", "Tarde pico (3:00 p.m. a 6:00 p.m)", "Noche (6:00 p.m. a 9:00 p.m)", "Noche tarde (9:00 p.m. a 11:00 p.m)"), ordered = TRUE)
@@ -230,40 +278,97 @@ ggplot(DF3, aes(x = factor(A, levels=c(FALSE,TRUE)),
 ::: {.column width="55%"}
 :::
 ::::
-## Modelos de Variable Discretas y Continuas
-## Variables Aleatorias Discretas {.small}
+## Variables Aleatorias Discretas {.smaller}
 
-***Distribución Binomial***
+### Distribución Binomial (Piso 2)
 
-Se desea calcular la probabilidad de que, en un nuevo estudio, exactamente 200 de las mediciones se hayan realizado en el piso 2.
+**Contexto:** Se quiere estimar la probabilidad de que, en un nuevo estudio, exactamente 200 de las mediciones se hayan realizado en el piso 2 de UTEC.
+
+- **Variable:** Piso donde se toma la medición  
+- **Evento éxito:** Medición realizada en el piso 2  
+- **X:** Número de mediciones en piso 2
+
+**Modelo:** $X \sim B(n,p)$
 
 ```{r}
 n <- nrow(DF3)
 p1 <- mean(DF3$Piso == 2)
-valores_x1 <- 0:n
-probabilidades1 <- dbinom(valores_x1, n, p1)
-barplot(probabilidades1, names.arg = valores_x1,
-        main = "Distribución Binomial: Mediciones en Piso 2",
-        xlab = "Número de mediciones", ylab = "P(X = x)", col = "skyblue")
+E1 <- n*p1
+V1 <- n*p1*(1-p1)
+SD1 <- sqrt(V1)
+CV1 <- SD1/E1
+prob200 <- dbinom(200, n, p1)
 ```
 
-## Variables Aleatorias Continuas {.small}
+**Donde:**  
+- **n:** `r n` (total de mediciones)  
+- **p:** `r round(p1,3)` (proporción de mediciones piso 2)
+
+**Resultados:**  
+- **Esperanza E[X]:** `r round(E1,2)`  
+- **Varianza V[X]:** `r round(V1,2)`  
+- **Desviación estándar SD:** `r round(SD1,2)`  
+- **Coef. Variación (CV):** `r round(CV1*100,2)`%  
+- **P(X=200):** `r signif(prob200,3)`
+
+*Interpretación:* Existe una probabilidad de `r signif(prob200*100,2)`% de que exactamente 200 mediciones se realicen en el piso 2, bajo el supuesto de independencia y misma probabilidad p para cada medición.
+
+
+
+## Variables Aleatorias Continuas {.smaller}
 
 :::::::::::: columns
 :::::: {.column width="50%"}
-Se desea estimar la probabilidad de que una medición de velocidad de bajada se encuentre entre 20 Mbps y 30 Mbps, en base a las mediciones realizadas por estudiantes.
+
+### Distribución Normal (Velocidad de Bajada)
+
+**Contexto:** Estimar la probabilidad de que la velocidad de bajada esté entre 20–30 Mbps (UTEC 2025-I).
+
+- **Variable:** Velocidad de bajada (Mbps)  
+- **Modelo:** $Y \sim N(\mu,\sigma^2)$
 
 ```{r}
-vbajada_pos <- DF3$VBajada[DF3$VBajada > 0]
 library(fitdistrplus)
-fit.norm <- fitdist(vbajada_pos, "norm")
-fit.exp  <- fitdist(vbajada_pos, "exp")
-fit.lnorm <- fitdist(vbajada_pos, "lnorm")
+fit.norm <- fitdist(DF3$VBajada, "norm")
+fit.exp  <- fitdist(DF3$VBajada, "exp")
+fit.lnorm <- fitdist(DF3$VBajada, "lnorm")
 
-# Comparar con gráficos
-plot.legend <- c("Normal", "Exponencial", "Log-Normal")
-denscomp(list(fit.norm, fit.exp, fit.lnorm), legendtext = plot.legend)
+# Mejor ajuste (Normal)
+mu <- fit.norm$estimate["mean"]
+sigma <- fit.norm$estimate["sd"]
+prob2030 <- pnorm(30, mu, sigma) - pnorm(20, mu, sigma)
 ```
+
+**Resultados:**  
+- **μ:** `r round(mu,2)` Mbps | **σ:** `r round(sigma,2)` Mbps  
+- **σ²:** `r round(sigma^2,2)` | **CV:** `r round((sigma/mu)*100,2)`%  
+- **P(20 < Y < 30):** `r signif(prob2030,3)`
+
+**Interpretación:** ~`r signif(prob2030*100,2)`% prob. de velocidad entre 20–30 Mbps.
+
+```{r}
+hist(DF3$VBajada, breaks = 30, freq = FALSE, col = "lightgray",
+     main = "Velocidad de bajada: histogram + teorías",
+     xlab = "Velocidad (Mbps)")
+
+# Normal
+curve(dnorm(x, mean = fit.norm$estimate["mean"], sd = fit.norm$estimate["sd"]),
+      col = "red", lwd = 2, add = TRUE)
+
+# Exponencial
+curve(dexp(x, rate = fit.exp$estimate["rate"]),
+      col = "green", lwd = 2, lty = 2, add = TRUE)
+
+# Log-Normal
+curve(dlnorm(x, meanlog = fit.lnorm$estimate["meanlog"], sdlog = fit.lnorm$estimate["sdlog"]),
+      col = "blue", lwd = 2, lty = 3, add = TRUE)
+
+legend("topright", legend = c("Normal", "Exponencial", "Log-Normal"),
+       col = c("red", "green", "blue"), lty = c(1,2,3), lwd = 2)
+
+```
+
+*Distribución más cercana: Normal.*
 
 ::::: columns
 ::: {.column width="45%"}
