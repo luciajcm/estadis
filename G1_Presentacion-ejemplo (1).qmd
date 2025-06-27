@@ -222,13 +222,11 @@ cat("La correlación entre las variables es: ", cor_val)
 -   Limpieza de datos con sum(is.na()) y na.omit().
 -   Variables renombradas para mayor comprensión.
 
-#### Descriptores:
-(Univariadas y bivariadas)
 
 ## Probabilidad Empíricas: {.small}
 
 
-## Probabilidad Condicional: {.small}
+### Probabilidad Condicional: {.small}
 
 -   Evento 1 (A): Seleccionar una persona al azar que se encuentre en el piso 2.
 
@@ -274,10 +272,7 @@ ggplot(DF3, aes(x = factor(A, levels=c(FALSE,TRUE)),
   theme_minimal()
 ```
 
-:::: columns
-::: {.column width="55%"}
-:::
-::::
+
 ## Variables Aleatorias Discretas {.smaller}
 
 ### Distribución Binomial (Piso 2)
@@ -369,44 +364,57 @@ legend("topright", legend = c("Normal", "Exponencial", "Log-Normal"),
 ```
 
 *Distribución más cercana: Normal.*
-
-::::: columns
-::: {.column width="45%"}
-
-```{}
-```
-:::
-
-::: {.column width="45%"}
-```{}
-```
-:::
-:::::
 ::::::
+:::::: {.column width="50%"}
+### Distribución Normal (Velocidad de Subida)
 
-::::::: {.column width="50%"}
-```{}
+**Contexto:** Estimar la probabilidad de que la velocidad de subida supere 50 Mbps (UTEC 2025-I).
+
+- **Variable:** Velocidad de subida (Mbps)  
+- **Modelo:** $Y \sim N(\mu,\sigma^2)$
+
+```{r}
+library(fitdistrplus)
+fit.norm2 <- fitdist(DF3$VSubida, "norm")
+fit.exp2  <- fitdist(DF3$VSubida, "exp")
+fit.lnorm2 <- fitdist(DF3$VSubida, "lnorm")
+
+# Mejor ajuste (Normal)
+mu2 <- fit.norm2$estimate["mean"]
+sigma2 <- fit.norm2$estimate["sd"]
+prob50 <- pnorm(50, mu2, sigma2, lower.tail = FALSE)
 ```
 
-:::::: columns
-::: {.column width="30%"}
+**Resultados:**  
+- **μ:** `r round(mu,2)` Mbps | **σ:** `r round(sigma,2)` Mbps  
+- **σ²:** `r round(sigma^2,2)` | **CV:** `r round((sigma/mu)*100,2)`%  
+- **P(20 < Y < 30):** `r signif(prob2030,3)`
 
-```{}
+**Interpretación:** ~`r signif(prob2030*100,2)`% prob. de velocidad mayor a 50 Mbps.
+
+```{r}
+hist(DF3$VSubida, breaks = 30, freq = FALSE, col = "lightgray",
+     main = "Velocidad de subida: histogram + teorías",
+     xlab = "Velocidad (Mbps)")
+
+# Normal
+curve(dnorm(x, mean = fit.norm2$estimate["mean"], sd = fit.norm2$estimate["sd"]),
+      col = "red", lwd = 2, add = TRUE)
+
+# Exponencial
+curve(dexp(x, rate = fit.exp2$estimate["rate"]),
+      col = "green", lwd = 2, lty = 2, add = TRUE)
+
+# Log-Normal
+curve(dlnorm(x, meanlog = fit.lnorm2$estimate["meanlog"], sdlog = fit.lnorm2$estimate["sdlog"]),
+      col = "blue", lwd = 2, lty = 3, add = TRUE)
+
+legend("topright", legend = c("Normal", "Exponencial", "Log-Normal"),
+       col = c("red", "green", "blue"), lty = c(1,2,3), lwd = 2)
+
 ```
-:::
-
-::: {.column width="30%"}
-
-```{}
-```
-:::
-
-::: {.column width="30%"}
-```{}
-```
-:::
 ::::::
-:::::::
-::::::::::::
+:::::::::::: 
+
 
 ## Conclusiones
